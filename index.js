@@ -1,46 +1,30 @@
-const { Client, GatewayIntentBits, SlashCommandBuilder, REST, Routes } = require("discord.js");
+const { Client, GatewayIntentBits } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent
+  ]
 });
 
-const commands = [
-  new SlashCommandBuilder()
-    .setName("ping")
-    .setDescription("Ver se o bot está online"),
+const PREFIX = "!";
 
-  new SlashCommandBuilder()
-    .setName("saldo")
-    .setDescription("Ver seu saldo de coins")
-];
+client.once("ready", () => {
+  console.log(`✅ Bot ligado como ${client.user.tag}`);
+});
 
-const rest = new REST({ version: "10" }).setToken(TOKEN);
+client.on("messageCreate", async (message) => {
+  if (message.author.bot) return;
+  if (!message.content.startsWith(PREFIX)) return;
 
-(async () => {
-  try {
-    console.log("Registrando comandos...");
-    await rest.put(
-      Routes.applicationCommands(CLIENT_ID),
-      { body: commands }
-    );
-    console.log("Comandos registrados!");
-  } catch (error) {
-    console.error(error);
-  }
-})();
+  const args = message.content.slice(PREFIX.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
 
-client.on("interactionCreate", interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === "ping") {
-    interaction.reply("🏓 Pong! Bot online.");
-  }
-
-  if (interaction.commandName === "saldo") {
-    interaction.reply("💰 Seu saldo: 0 coins");
+  if (command === "ping") {
+    message.reply("🏓 Pong! Bot online e funcionando.");
   }
 });
 
